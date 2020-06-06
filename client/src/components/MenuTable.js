@@ -1,6 +1,4 @@
-import { useState, useContext, Fragment } from "react";
-import PurchaseContext from "../components/PurchaseContext";
-import SideOptionsContext from "../components/SideOptionsContext";
+import { useState, Fragment } from "react";
 import { makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -41,26 +39,25 @@ const useRowStyles = makeStyles(theme => ({
 
 function SideRow(props) {
     const [openSideOptions, setOpenSideOptions] = useState(false);
-    const { sideOptions, setSideOptions } = useContext(SideOptionsContext);
-    const { checkoutItemsCount, _ } = useContext(PurchaseContext);
-
     const classes = useRowStyles();
+
+    console.log(props.sideRow);
+    console.log(props.items[props.itemName].sides);
 
     return (
         <TableRow className={classes.root}>
             <TableCell style={{fontWeight: 700, paddingLeft: "4.5em"}}>
                 {
                     "Side " + (
-                        checkoutItemsCount[props.row.name] === undefined ||
-                        checkoutItemsCount[props.row.name].count === 0 ||
-                        checkoutItemsCount[props.row.name].count === 1
+                        props.items[props.itemName].count === 0 ||
+                        props.items[props.itemName].count === 1
                         ? "" : props.sideRow + 1
                     )
                 }
             </TableCell>
             <TableCell align="right">
                 <Typography style={{color: "black", fontSize: "0.87rem"}}>
-                    {sideOptions[props.row.name + props.sideRow] === undefined ? props.row.side[0] : sideOptions[props.row.name + props.sideRow]}
+                    {props.items[props.itemName].sides[props.sideRow]}
                     <IconButton
                         size="small"
                         color="secondary"
@@ -72,18 +69,32 @@ function SideRow(props) {
                 <Collapse in={openSideOptions} unmountOnExit>
                     <FormControl>
                         <RadioGroup
-                            value={sideOptions[props.row.name + props.sideRow] === undefined ? props.row.side[0] : sideOptions[props.row.name + props.sideRow]}
-                            onChange={event => {setSideOptions(items => ({...items, [props.row.name + props.sideRow]: event.target.value})); setOpenSideOptions(false)}}
+                            value={props.items[props.itemName].sides[props.sideRow]}
+                            onChange={event => {
+                                props.setItems(
+                                    {
+                                        ...props.items,
+                                        [props.itemName]: {
+                                            ...props.items[props.itemName],
+                                            ["sides"]: {
+                                                ...props.items[props.itemName].sides,
+                                                [props.sideRow]: event.target.value
+                                            }
+                                        }
+                                    }
+                                )
+                                setOpenSideOptions(false)}
+                            }
                         >
                             {
-                                props.row.side.map(side => (
+                                props.items[props.itemName].availableSides.map(side => (
                                     <FormControlLabel
                                         key={side}
                                         value={side}
                                         control={<Radio size="small" />}
                                         label={side}
                                         labelPlacement="start"
-                                        disabled={checkoutItemsCount[props.row.name] === undefined || checkoutItemsCount[props.row.name].count === 0 ? true : false}
+                                        disabled={props.items[props.itemName].count === 0 ? true : false}
                                     />
                                 ))
                             }
@@ -97,9 +108,6 @@ function SideRow(props) {
 
 function Row(props) {
     const [openDetails, setOpenDetails] = useState(false);
-    // const { sideOptions, setSideOptions } = useContext(SideOptionsContext);
-    const { checkoutItemsCount, setCheckoutItemsCount } = useContext(PurchaseContext);
-
     const classes = useRowStyles();
 
     return (
@@ -111,21 +119,24 @@ function Row(props) {
                     </IconButton>
                 </TableCell>
                 <TableCell style={{textTransform: "capitalize"}}>
-                    {props.row.name}
+                    {props.itemName}
                 </TableCell>
                 <TableCell padding="none" align="right">
-                    {props.row.price.toFixed(2) + "€"}
+                    {props.items[props.itemName].price.toFixed(2) + "€"}
                 </TableCell>
                 <TableCell padding="none" align="right" style={{minWidth: "8em"}} >
                     <IconButton
-                        disabled={(checkoutItemsCount[props.row.name] === undefined ? 0 : checkoutItemsCount[props.row.name].count) <= 0 ? true : false}
+                        disabled={props.items[props.itemName].count <= 0 ? true : false}
                         color="secondary"
                         style={{paddingRight: "0.3rem"}}
-                        onClick={() => setCheckoutItemsCount(
-                            items => ({...items, [props.row.name]: {
-                                count: (items[props.row.name] === undefined ? 0 : items[props.row.name].count) - 1,
-                                price: props.row.price
-                            }})
+                        onClick={() =>  props.setItems(
+                            {
+                                ...props.items,
+                                [props.itemName]: {
+                                    ...props.items[props.itemName],
+                                    ["count"]: props.items[props.itemName].count - 1
+                                }
+                            }
                         )}
                     >
                         <RemoveCircleIcon />
@@ -135,32 +146,35 @@ function Row(props) {
                         type="number"
                         InputProps={{disableUnderline: true}}
                         inputProps={{style: {textAlign: "center", width: "1.3em"}}}
-                        value={checkoutItemsCount[props.row.name] === undefined ? 0 : checkoutItemsCount[props.row.name].count}
+                        value={props.items[props.itemName].count}
                         onFocus={event => {event.target.select()}}
-                        onChange={() => setCheckoutItemsCount(
-                            items => ({...items, [props.row.name]: {count: parseInt(event.target.value), price: props.row.price}})
+                        onChange={() => props.setItems(
+                            {
+                                ...props.items,
+                                [props.itemName]: {
+                                    ...props.items[props.itemName],
+                                    ["count"]: parseInt(event.target.value),
+                                    ["sides"]: Object.assign({...Array(parseInt(event.target.value)).fill(props.items[props.itemName].availableSides[0])}, props.items[props.itemName].sides)
+                                }
+                            }
                         )}
                     />
                     <IconButton
                         color="secondary"
                         style={{paddingLeft: "0.3rem"}}
-                        onClick={() => {
-                            setCheckoutItemsCount(
-                                items => ({...items, [props.row.name]: {
-                                    count: (items[props.row.name] === undefined ? 0 : items[props.row.name].count) + 1,
-                                    price: props.row.price
-                                }})
-                            );
-                            // setSideOptions(items => (
-                            //     {
-                            //         ...items,
-                            //         [props.row.name]: {
-                            //             ...items[props.row.name],
-                            //             [parseInt(Object.keys(sideOptions[props.row.name]).slice(-1)[0]) + 1]: props.row.side[0]
-                            //         }
-                            //     }
-                            // ));
-                        }}
+                        onClick={() =>  props.setItems(
+                            {
+                                ...props.items,
+                                [props.itemName]: {
+                                    ...props.items[props.itemName],
+                                    ["count"]: props.items[props.itemName].count + 1,
+                                    ["sides"]: {
+                                        ...props.items[props.itemName].sides,
+                                        [parseInt(Object.keys(props.items[props.itemName].sides).slice(-1)[0]) + 1]: props.items[props.itemName].availableSides[0]
+                                    }
+                                }
+                            }
+                        )}
                     >
                         <AddCircleIcon />
                     </IconButton>
@@ -176,20 +190,14 @@ function Row(props) {
                                         Allergens
                                     </TableCell>
                                     <TableCell align="right">
-                                        {props.row.allergens.join(" - ")}
+                                        {props.items[props.itemName].allergens.join(" - ")}
                                     </TableCell>
                                 </TableRow>
                                 {
                                     Array
-                                        .from(Array(
-                                            checkoutItemsCount[props.row.name] === undefined ||
-                                            isNaN(checkoutItemsCount[props.row.name].count) ||
-                                            checkoutItemsCount[props.row.name].count === 0
-                                            ? 1
-                                            : checkoutItemsCount[props.row.name].count).keys()
-                                        )
+                                        .from(Array(props.items[props.itemName].count === 0 ? 1 : props.items[props.itemName].count).keys())
                                         .map(sideRow => (
-                                            <SideRow key={sideRow} sideRow={sideRow} row={props.row} />
+                                            <SideRow key={sideRow} sideRow={sideRow} itemName={props.itemName} items={props.items} setItems={props.setItems} />
                                     ))
                                 }
                             </TableBody>
@@ -224,9 +232,15 @@ export default function MenuTable(props) {
             <TableContainer>
                 <Table size="small">
                     <TableBody>
-                        {props.items.map(row => (
-                            <Row key={row.name} row={row} />
-                        ))}
+                        {
+                            Object
+                                .keys(props.items)
+                                .filter(key => (props.items[key].subcategory === props.current))
+                                // .reduce((obj, key) => ({...obj, [key]: props.items[key]}), {})
+                                .map(itemName => (
+                                    <Row key={itemName} itemName={itemName} items={props.items} setItems={props.setItems} />
+                                ))
+                        }
                     </TableBody>
                 </Table>
             </TableContainer>
