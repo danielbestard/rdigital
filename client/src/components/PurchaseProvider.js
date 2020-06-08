@@ -12,9 +12,7 @@ function PurchaseProvider(props) {
             .then(res => setItems(
                 res.data.data.reduce((o, key) => ({ ...o, [key.name]: {
                     count: 0,
-                    sides: {
-                        [0]: key.side[0]
-                    },
+                    sides: [key.side[0]],
                     availableSides: key.side,
                     price: key.price,
                     allergens: key.allergens,

@@ -77,10 +77,14 @@ function SideRow(props) {
                                                     ...items,
                                                     [props.itemName]: {
                                                         ...items[props.itemName],
-                                                        ["sides"]: {
-                                                            ...items[props.itemName].sides,
-                                                            [props.sideRow]: event.target.value
-                                                        }
+                                                        ["sides"]:
+                                                            items[props.itemName].sides
+                                                                .slice(0, props.sideRow)
+                                                                .concat([event.target.value])
+                                                                .concat(
+                                                                    items[props.itemName].sides
+                                                                        .slice(props.sideRow + 1, items[props.itemName].sides.length)
+                                                                )
                                                     }
                                                 }
                                             )
@@ -141,7 +145,11 @@ function Row(props) {
                                             ...items,
                                             [props.itemName]: {
                                                 ...items[props.itemName],
-                                                ["count"]: items[props.itemName].count - 1
+                                                ["count"]: items[props.itemName].count - 1,
+                                                ["sides"]:
+                                                    items[props.itemName].count === 1 ?
+                                                    [items[props.itemName].availableSides[0]] :
+                                                    items[props.itemName].sides.slice(0, -1)
                                             }
                                         }
                                     )}
@@ -161,7 +169,17 @@ function Row(props) {
                                             [props.itemName]: {
                                                 ...items[props.itemName],
                                                 ["count"]: parseInt(event.target.value),
-                                                ["sides"]: Object.assign({...Array(parseInt(event.target.value)).fill(items[props.itemName].availableSides[0])}, items[props.itemName].sides)
+                                                ["sides"]:
+                                                    items[props.itemName].sides
+                                                        .slice(0, parseInt(event.target.value))
+                                                        .concat(
+                                                            Array(
+                                                                parseInt(event.target.value) - items[props.itemName].sides.length < 0 ?
+                                                                0 :
+                                                                parseInt(event.target.value) - items[props.itemName].sides.length
+                                                            )
+                                                            .fill(items[props.itemName].availableSides[0])
+                                                        )
                                             }
                                         }
                                     )}
@@ -175,10 +193,10 @@ function Row(props) {
                                             [props.itemName]: {
                                                 ...items[props.itemName],
                                                 ["count"]: items[props.itemName].count + 1,
-                                                ["sides"]: {
-                                                    ...items[props.itemName].sides,
-                                                    [parseInt(Object.keys(items[props.itemName].sides).slice(-1)[0]) + 1]: items[props.itemName].availableSides[0]
-                                                }
+                                                ["sides"]:
+                                                    items[props.itemName].count === 0 ?
+                                                    items[props.itemName].sides :
+                                                    items[props.itemName].sides.concat([items[props.itemName].availableSides[0]])
                                             }
                                         }
                                     )}
@@ -205,7 +223,7 @@ function Row(props) {
                                                     .from(Array(items[props.itemName].count === 0 ? 1 : items[props.itemName].count).keys())
                                                     .map(sideRow => (
                                                         <SideRow key={sideRow} sideRow={sideRow} itemName={props.itemName} />
-                                                ))
+                                                    ))
                                             }
                                         </TableBody>
                                     </Table>
@@ -234,7 +252,9 @@ export default function MenuTable(props) {
                                         </IconButton>
                                     </Grid>
                                     <Grid item>
-                                        <Typography style={{textTransform: "capitalize", color: "white"}}>{props.selectedSubcategory}</Typography>
+                                        <Typography style={{textTransform: "capitalize", color: "white"}}>
+                                            {props.selectedSubcategory}
+                                        </Typography>
                                     </Grid>
                                     <Grid item>
                                         <CheckoutBadge />
