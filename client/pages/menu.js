@@ -5,24 +5,22 @@ import { PurchaseConsumer } from "../src/components/PurchaseProvider";
 
 export default function Menu() {
     const [open, setOpen] = useState(false);
-    const [current, setCurrent] = useState("");
+    const [selectedSubcategory, setSelectedSubcategory] = useState("");
 
     return (            
         <PurchaseConsumer>
             {
-                ({items, setItems}) => (
+                ({items, _}) => (
                     <Fragment>
                         <MenuButtons
                             subcategories={Array.from(new Set(Object.values(items).map(item => item.subcategory)))}
                             onClick={event => {
                                 setOpen(true);
-                                setCurrent(event.target.textContent)
+                                setSelectedSubcategory(event.target.textContent)
                             }}
                         />
                         <MenuTable
-                            items={items}
-                            setItems={setItems}
-                            current={current}
+                            selectedSubcategory={selectedSubcategory}
                             open={open}
                             onClose={() => setOpen(false)}
                         />

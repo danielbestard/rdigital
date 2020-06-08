@@ -9,7 +9,8 @@ const MenuItem = new mongoose.Schema(
         category: {type: String, require: true},
         subcategory: {type: String, require: true},
         price: {type: Number, require: true},
-        allergens: {type: [String], require: false}
+        allergens: {type: [String], require: false},
+        side: {type: [String], require: false}
     }
 );
 

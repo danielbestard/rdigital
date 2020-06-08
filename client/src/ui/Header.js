@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
@@ -11,18 +11,19 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import CheckoutBadge from "../components/CheckoutBadge";
 
-function Header(props) {
+export default function Header() {
     const routes = [
         {name: "Home", link: "/", activeIndex: 0},
         {name: "Menu", link: "/menu", activeIndex: 1},
         {name: "Today", link: "/today", activeIndex: 2},
-        {name: "Children", link: "/children", activeIndex: 3}
+        {name: "Children", link: "/children", activeIndex: 3},
+        {name: "Order", link: "/order", activeIndex: 4}
     ];
 
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [openDrawer, setOpenDrawer] = useState(false);
 
-    React.useEffect(() => {
+    useEffect(() => {
         routes.forEach(route => {
             switch (window.location.pathname) {
                 case `${route.link}`:
@@ -48,7 +49,6 @@ function Header(props) {
                         <MenuIcon />
                     </IconButton>
                 </ButtonGroup>
-
                 <SwipeableDrawer
                     anchor="left"
                     open={openDrawer}
@@ -76,5 +76,3 @@ function Header(props) {
         </AppBar>
     );
 }
-
-export default Header;
