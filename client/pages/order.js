@@ -20,7 +20,6 @@ import FormControl from '@material-ui/core/FormControl';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import Radio from '@material-ui/core/Radio';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
-import DialogContentText from '@material-ui/core/DialogContentText';
 
 const useStyles = makeStyles(theme => ({
     orderButton: {
@@ -38,33 +37,55 @@ const useStyles = makeStyles(theme => ({
 }));
 
 function DialogToRemoveSide(props) {
+    const [selectedSide, setSelectedSide] = useState("");
+
     return (
         <PurchaseConsumer>
             {
                 ({items, setItems}) => (
                     <Dialog onClose={props.onClose} open={props.open} maxWidth="md" >
-                        <DialogTitle style={{textAlign: "center"}}>Dish side to remove</DialogTitle>
+                        <DialogTitle style={{textAlign: "center"}}>Remove</DialogTitle>
                         <DialogContent>
-                            <DialogContentText>
-                                {"The item with side '" + items[props.dish].sides[items[props.dish].count] + "' will be removed"}
-                            </DialogContentText>
+                            <FormControl>
+                                <RadioGroup
+                                    
+                                    value={selectedSide}
+                                    onChange={event => setSelectedSide(event.target.value)}
+                                >
+                                    {
+                                        Array.from(new Set(items[props.dish].sides)).map(side => (
+                                            <FormControlLabel
+                                                key={side}
+                                                value={side}
+                                                control={<Radio size="small" />}
+                                                label={side}
+                                                labelPlacement="start"
+                                            />
+                                        ))
+                                    }
+                                </RadioGroup>
+                            </FormControl>
                         </DialogContent>
                         <DialogActions>
-                        <Button color="primary" onClick={() => {
-                            props.onClose();
-                            setItems(
-                                {
-                                    ...items,
-                                    [props.dish]: {
-                                        ...items[props.dish],
-                                        ["count"]: items[props.dish].count + 1,
-                                    }
-                                }
-                            )
-                        }}>
+                            <Button color="primary" onClick={props.onClose}>
                                 Cancel
                             </Button>
-                            <Button color="primary" onClick={props.onClose}>
+                            <Button color="primary" onClick={() => {
+                                props.onClose();
+                                setItems(
+                                    {
+                                        ...items,
+                                        [props.dish]: {
+                                            ...items[props.dish],
+                                            ["count"]: items[props.dish].count - 1,
+                                            ["sides"]:
+                                                items[props.dish].sides
+                                                    .slice(0, items[props.dish].sides.indexOf(selectedSide))
+                                                    .concat(items[props.dish].sides.slice(items[props.dish].sides.indexOf(selectedSide) + 1))
+                                        }
+                                    }
+                                )
+                            }}>
                                 OK
                             </Button>
                         </DialogActions>
@@ -76,6 +97,8 @@ function DialogToRemoveSide(props) {
 }
 
 function DialogToAddSide(props) {
+    const [selectedSide, setSelectedSide] = useState("");
+
     return (
         <PurchaseConsumer>
             {
@@ -85,21 +108,8 @@ function DialogToAddSide(props) {
                         <DialogContent>
                             <FormControl>
                                 <RadioGroup
-                                    value={items[props.dish].sides[items[props.dish].count]}
-                                    onChange={event => 
-                                        setItems(
-                                            {
-                                                ...items,
-                                                [props.dish]: {
-                                                    ...items[props.dish],
-                                                    ["sides"]: {
-                                                        ...items[props.dish].sides,
-                                                        [items[props.dish].count]: event.target.value
-                                                    }
-                                                }
-                                            }
-                                        )
-                                    }
+                                    value={selectedSide}
+                                    onChange={event => setSelectedSide(event.target.value)}
                                 >
                                     {
                                         items[props.dish].availableSides.map(side => (
@@ -116,21 +126,22 @@ function DialogToAddSide(props) {
                             </FormControl>
                         </DialogContent>
                         <DialogActions>
-                        <Button color="primary" onClick={() => {
-                            props.onClose();
-                            setItems(
-                                {
-                                    ...items,
-                                    [props.dish]: {
-                                        ...items[props.dish],
-                                        ["count"]: items[props.dish].count - 1,
-                                    }
-                                }
-                            )
-                        }}>
+                            <Button color="primary" onClick={props.onClose}>
                                 Cancel
                             </Button>
-                            <Button color="primary" onClick={props.onClose}>
+                            <Button color="primary" onClick={() => {
+                                setItems(
+                                    {
+                                        ...items,
+                                        [props.dish]: {
+                                            ...items[props.dish],
+                                            ["count"]: items[props.dish].count + 1,
+                                            ["sides"]: items[props.dish].sides.concat([selectedSide])
+                                        }
+                                    }
+                                );
+                                props.onClose();
+                            }}>
                                 OK
                             </Button>
                         </DialogActions>
@@ -171,18 +182,25 @@ export default function Order() {
                                                                         disabled={items[key].count <= 0 ? true : false}
                                                                         color="secondary"
                                                                         style={{padding: "0.2rem"}}
-                                                                        onClick={() =>  {
-                                                                            setItems(
-                                                                                {
-                                                                                    ...items,
-                                                                                    [key]: {
-                                                                                        ...items[key],
-                                                                                        ["count"]: items[key].count - 1
+                                                                        onClick={function() {
+                                                                            if (items[key].sides.every( (val, i, arr) => val === arr[0])) {
+                                                                                setItems(
+                                                                                    {
+                                                                                        ...items,
+                                                                                        [key]: {
+                                                                                            ...items[key],
+                                                                                            ["count"]: items[key].count - 1,
+                                                                                            ["sides"]:
+                                                                                                items[key].count === 1 ?
+                                                                                                [items[key].availableSides[0]] :
+                                                                                                items[key].sides.slice(0, -1)
+                                                                                        }
                                                                                     }
-                                                                                }
-                                                                            );
-                                                                            setItemToModify(key);
-                                                                            setOpenDialogToRemove(true)
+                                                                                )
+                                                                            } else {
+                                                                                setItemToModify(key);
+                                                                                setOpenDialogToRemove(true);
+                                                                            }
                                                                         }}
                                                                     >
                                                                         <RemoveCircleIcon />
@@ -192,19 +210,6 @@ export default function Order() {
                                                                         color="secondary"
                                                                         style={{padding: "0.2rem"}}
                                                                         onClick={() => {
-                                                                            setItems(
-                                                                                {
-                                                                                    ...items,
-                                                                                    [key]: {
-                                                                                        ...items[key],
-                                                                                        ["count"]: items[key].count + 1,
-                                                                                        ["sides"]: {
-                                                                                            ...items[key].sides,
-                                                                                            [parseInt(Object.keys(items[key].sides).slice(-1)[0]) + 1]: items[key].availableSides[0]
-                                                                                        }
-                                                                                    }
-                                                                                }
-                                                                            );
                                                                             setItemToModify(key);
                                                                             setOpenDialogToAdd(true)
                                                                         }}
@@ -243,8 +248,22 @@ export default function Order() {
                                 </Grid>
                             </Grid>
                         </Grid>
-                        {openDialogToAdd ? <DialogToAddSide open={openDialogToAdd} onClose={() => setOpenDialogToAdd(false)} dish={itemToModify} /> : undefined}
-                        {(openDialogToRemove && !Object.values(items[itemToModify].sides).slice(0, items[itemToModify].count + 1).every( (val, i, arr) => val === arr[0])) ? <DialogToRemoveSide open={openDialogToRemove} onClose={() => setOpenDialogToRemove(false)} dish={itemToModify} /> : undefined}
+                        {
+                            openDialogToAdd ?
+                            <DialogToAddSide
+                                open={openDialogToAdd}
+                                onClose={() => setOpenDialogToAdd(false)}
+                                dish={itemToModify}
+                            /> : undefined
+                        }
+                        {
+                            openDialogToRemove ?
+                            <DialogToRemoveSide
+                                open={openDialogToRemove}
+                                onClose={() => setOpenDialogToRemove(false)}
+                                dish={itemToModify}
+                            /> : undefined
+                        }
                     </Fragment>
                 )
             }
