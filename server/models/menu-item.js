@@ -5,12 +5,12 @@ mongoose.set('useCreateIndex', true);
 const MenuItem = new mongoose.Schema(
     {
         name: {type: String, require: true, unique: true},
-        description: {type: String, require: false},
+        description: {type: String, require: false, default: undefined},
         category: {type: String, require: true},
         subcategory: {type: String, require: true},
         price: {type: Number, require: true},
-        allergens: {type: [String], require: false},
-        side: {type: [String], require: false}
+        allergens: {type: [String], require: false, default: undefined},
+        side: {type: [String], require: false, default: undefined}
     }
 );
 

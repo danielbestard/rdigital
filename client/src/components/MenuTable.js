@@ -140,8 +140,15 @@ function Row(props) {
                                     disabled={items[props.itemName].count <= 0 ? true : false}
                                     color="secondary"
                                     style={{paddingRight: "0.3rem"}}
-                                    onClick={() =>  setItems(
-                                        {
+                                    onClick={() => items[props.itemName].sides === undefined ?
+                                        setItems({
+                                            ...items,
+                                            [props.itemName]: {
+                                                ...items[props.itemName],
+                                                ["count"]: items[props.itemName].count - 1
+                                            }
+                                        }) :
+                                        setItems({
                                             ...items,
                                             [props.itemName]: {
                                                 ...items[props.itemName],
@@ -151,8 +158,8 @@ function Row(props) {
                                                     [items[props.itemName].availableSides[0]] :
                                                     items[props.itemName].sides.slice(0, -1)
                                             }
-                                        }
-                                    )}
+                                        })
+                                    }
                                 >
                                     <RemoveCircleIcon />
                                 </IconButton>
@@ -163,8 +170,15 @@ function Row(props) {
                                     inputProps={{style: {textAlign: "center", width: "1.3em"}}}
                                     value={items[props.itemName].count}
                                     onFocus={event => {event.target.select()}}
-                                    onChange={() => setItems(
-                                        {
+                                    onChange={() => items[props.itemName].sides === undefined ?
+                                        setItems({
+                                            ...items,
+                                            [props.itemName]: {
+                                                ...items[props.itemName],
+                                                ["count"]: parseInt(event.target.value)
+                                            }
+                                        }) :
+                                        setItems({
                                             ...items,
                                             [props.itemName]: {
                                                 ...items[props.itemName],
@@ -181,14 +195,21 @@ function Row(props) {
                                                             .fill(items[props.itemName].availableSides[0])
                                                         )
                                             }
-                                        }
-                                    )}
+                                        })
+                                    }
                                 />
                                 <IconButton
                                     color="secondary"
                                     style={{paddingLeft: "0.3rem"}}
-                                    onClick={() =>  setItems(
-                                        {
+                                    onClick={() => items[props.itemName].sides === undefined ?
+                                        setItems({
+                                            ...items,
+                                            [props.itemName]: {
+                                                ...items[props.itemName],
+                                                ["count"]: items[props.itemName].count + 1
+                                            }
+                                        }) :
+                                        setItems({
                                             ...items,
                                             [props.itemName]: {
                                                 ...items[props.itemName],
@@ -198,8 +219,8 @@ function Row(props) {
                                                     items[props.itemName].sides :
                                                     items[props.itemName].sides.concat([items[props.itemName].availableSides[0]])
                                             }
-                                        }
-                                    )}
+                                        })
+                                    }
                                 >
                                     <AddCircleIcon />
                                 </IconButton>
@@ -215,13 +236,15 @@ function Row(props) {
                                                     Allergens
                                                 </TableCell>
                                                 <TableCell align="right">
-                                                    {items[props.itemName].allergens.join(" - ")}
+                                                    {items[props.itemName].allergens === undefined ? "-" : items[props.itemName].allergens.join(" - ")}
                                                 </TableCell>
                                             </TableRow>
                                             {
                                                 Array
                                                     .from(Array(items[props.itemName].count === 0 ? 1 : items[props.itemName].count).keys())
                                                     .map(sideRow => (
+                                                        items[props.itemName].sides === undefined ?
+                                                        undefined :
                                                         <SideRow key={sideRow} sideRow={sideRow} itemName={props.itemName} />
                                                     ))
                                             }

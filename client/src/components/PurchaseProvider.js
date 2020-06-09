@@ -12,13 +12,13 @@ function PurchaseProvider(props) {
             .then(res => setItems(
                 res.data.data.reduce((o, key) => ({ ...o, [key.name]: {
                     count: 0,
-                    sides: [key.side[0]],
-                    availableSides: key.side,
+                    sides: key.side === undefined ? undefined : [key.side[0]],
+                    availableSides: key.side === undefined ? undefined : key.side,
                     price: key.price,
-                    allergens: key.allergens,
+                    allergens: key.allergens === undefined ? undefined : key.allergens,
                     category: key.category,
                     subcategory: key.subcategory
-                }}), {})                
+                }}), {})
             ))
         }, []
     );

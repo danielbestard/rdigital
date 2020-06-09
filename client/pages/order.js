@@ -183,7 +183,17 @@ export default function Order() {
                                                                         color="secondary"
                                                                         style={{padding: "0.2rem"}}
                                                                         onClick={function() {
-                                                                            if (items[key].sides.every( (val, i, arr) => val === arr[0])) {
+                                                                            if (items[key].sides === undefined) {
+                                                                                setItems(
+                                                                                    {
+                                                                                        ...items,
+                                                                                        [key]: {
+                                                                                            ...items[key],
+                                                                                            ["count"]: items[key].count - 1
+                                                                                        }
+                                                                                    }
+                                                                                )
+                                                                            } else if (items[key].sides.every( (val, i, arr) => val === arr[0])) {
                                                                                 setItems(
                                                                                     {
                                                                                         ...items,
@@ -209,9 +219,21 @@ export default function Order() {
                                                                     <IconButton
                                                                         color="secondary"
                                                                         style={{padding: "0.2rem"}}
-                                                                        onClick={() => {
-                                                                            setItemToModify(key);
-                                                                            setOpenDialogToAdd(true)
+                                                                        onClick={function() {
+                                                                            if (items[key].sides === undefined) {
+                                                                                setItems(
+                                                                                    {
+                                                                                        ...items,
+                                                                                        [key]: {
+                                                                                            ...items[key],
+                                                                                            ["count"]: items[key].count + 1
+                                                                                        }
+                                                                                    }
+                                                                                )
+                                                                            } else {
+                                                                                setItemToModify(key);
+                                                                                setOpenDialogToAdd(true)
+                                                                            }
                                                                         }}
                                                                     >
                                                                         <AddCircleIcon />
@@ -251,7 +273,7 @@ export default function Order() {
                         {
                             openDialogToAdd ?
                             <DialogToAddSide
-                                open={openDialogToAdd}
+                                open
                                 onClose={() => setOpenDialogToAdd(false)}
                                 dish={itemToModify}
                             /> : undefined
@@ -259,7 +281,7 @@ export default function Order() {
                         {
                             openDialogToRemove ?
                             <DialogToRemoveSide
-                                open={openDialogToRemove}
+                                open
                                 onClose={() => setOpenDialogToRemove(false)}
                                 dish={itemToModify}
                             /> : undefined
